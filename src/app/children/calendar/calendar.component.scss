@@ -1,0 +1,67 @@
+.calendar {
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr); // For month view (7 days)
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .day-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .calendar-body div,
+  .calendar-grid div,
+  .week-grid div,
+  .day-grid div {
+    border-right: 1px solid #ccc; /* Add right border */
+    border-bottom: 1px solid #ccc; /* Add bottom border */
+    border-top: 1px solid #ccc;
+    width: 150px;
+    height: 150px;
+  }
+
+  // .calendar-body div:last-child,
+  // .calendar-grid div:last-child,
+  // .week-grid div:last-child,
+  // .day-grid div:last-child {
+  //   border-right: none; /* Remove right border from the last cell */
+  // }
+
+  // .calendar-body div:nth-child(7n),
+  // .calendar-grid div:nth-child(7n),
+  // .week-grid div:nth-child(7n),
+  // .day-grid div:nth-child(7n) {
+  //   border-right: none;
+  // }
+
+  .calendar-body div:nth-child(7n + 1) {
+    border-left: 1px solid #ccc; /* Add left border to first element in each row */
+  }
+
+  .calendar-body div:first-child {
+    border-top: 1px solid #ccc; /* Add top border to the first row */
+  }
+}
+
+.event {
+  display: block; /* or flex */
+}
+
+.low-opacity {
+  opacity: 0.2; /* Adjust the opacity value as needed */
+}

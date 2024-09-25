@@ -1,0 +1,77 @@
+<p-button (onClick)="showDialog()" label="Show" />
+<div class="calendar">
+  <div class="calendar-header">
+    <button (click)="prev()">Previous</button>
+    <span>{{ currentView }}</span>
+    <button (click)="next()">Next</button>
+
+    <div class="view-options">
+      <button (click)="setView('day')">Day</button>
+      <button (click)="setView('week')">Week</button>
+      <button (click)="setView('month')">Month</button>
+    </div>
+  </div>
+
+  <div class="calendar-body">
+    <ng-container *ngIf="currentView === 'month'">
+      <div class="calendar-grid">
+        <div *ngFor="let day of monthDays">
+          <div [ngClass]="{ 'low-opacity': !day.isCurrent }">
+            {{ day.date }}
+
+            <span *ngFor="let event of day.events" class="event">
+              <button *ngIf="day.date" (click)="onClickEvent(event)">
+                {{ event.title }}
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentView === 'week'">
+      <div class="week-grid">
+        <div *ngFor="let day of weekDays">{{ day.date }}</div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentView === 'day'">
+      <div class="day-grid">
+        <div>{{ selectedDay.toDateString() }}</div>
+      </div>
+    </ng-container>
+  </div>
+</div>
+
+<p-dialog
+  header="Edit Profile"
+  [modal]="true"
+  [(visible)]="visible"
+  [style]="{ width: '25rem' }"
+>
+  <form [formGroup]="formGroup">
+    <span class="p-text-secondary block mb-5">Update your information.</span>
+    <div class="flex align-items-center gap-3 mb-3">
+      <label for="date" class="font-semibold w-6rem">Date</label>
+      <p-calendar formControlName="date" [touchUI]="true" />
+    </div>
+    <div class="flex align-items-center gap-3 mb-5">
+      <label for="email" class="font-semibold w-6rem">Email</label>
+      <input
+        formControlName="data"
+        pInputText
+        id="email"
+        class="flex-auto"
+        autocomplete="off"
+      />
+    </div>
+    <div class="flex justify-content-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        (onClick)="visible = false"
+      />
+      <p-button label="Save" (onClick)="onAddEvent()" />
+    </div>
+  </form>
+</p-dialog>
