@@ -8,20 +8,26 @@
     <div class="view-options">
       <button (click)="setView('day')">Day</button>
       <button (click)="setView('week')">Week</button>
-      <button (click)="setView('month')">Month</button>
+      <button (click)="setView('dayGridMonth')">Month</button>
     </div>
   </div>
 
   <div class="calendar-body">
-    <ng-container *ngIf="currentView === 'month'">
+    <ng-container *ngIf="currentView === 'dayGridMonth'">
       <div class="calendar-grid">
         <div *ngFor="let day of monthDays">
-          <div [ngClass]="{ 'low-opacity': !day.isCurrent }">
+          <div
+            [ngClass]="{
+              'low-opacity': !day.isCurrent,
+              today: day.date === today
+            }"
+          >
             {{ day.date }}
 
             <span *ngFor="let event of day.events" class="event">
               <button *ngIf="day.date" (click)="onClickEvent(event)">
                 {{ event.title }}
+                {{ event.date }}
               </button>
             </span>
           </div>
@@ -31,13 +37,72 @@
 
     <ng-container *ngIf="currentView === 'week'">
       <div class="week-grid">
-        <div *ngFor="let day of weekDays">{{ day.date }}</div>
+        <!-- <div *ngFor="let day of weekDays">{{ day.date }}</div> -->
+        <div>
+          <div></div>
+          <div *ngFor="let time of weekViewTimes">{{ time }}</div>
+        </div>
+
+        <div *ngFor="let day of monthDays">
+          <div
+            [ngClass]="{
+              'low-opacity': !day.isCurrent,
+              today: day.date === today
+            }"
+          >
+            {{ day.date }}
+          </div>
+          <div *ngFor="let time of weekViewTimes; let i = index">
+            <span *ngFor="let event of day.events" class="event">
+              <button
+                *ngIf="
+                  (day.date && i + 2 === event.start24) ||
+                  (i === 0 && event.start24 === 0)
+                "
+                (click)="onClickEvent(event)"
+                [style.height]="event.height + 'px'"
+              >
+                {{ event.title }}
+                <!-- {{ event.date }} -->
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
     </ng-container>
 
     <ng-container *ngIf="currentView === 'day'">
       <div class="day-grid">
-        <div>{{ selectedDay.toDateString() }}</div>
+        <!-- <div>
+          <div></div>
+          <div *ngFor="let time of weekViewTimes">{{ time }}</div>
+        </div> -->
+
+        <div *ngFor="let day of monthDays">
+          <div
+            [ngClass]="{
+              'low-opacity': !day.isCurrent,
+              today: day.date === today
+            }"
+          >
+            {{ day.date }}
+          </div>
+          <div *ngFor="let time of weekViewTimes; let i = index">
+            <span *ngFor="let event of day.events" class="event">
+              <button
+                *ngIf="
+                  (day.date && i + 2 === event.start24) ||
+                  (i === 0 && event.start24 === 0)
+                "
+                (click)="onClickEvent(event)"
+                [style.height]="event.height + 'px'"
+              >
+                {{ event.title }}
+                <!-- {{ event.date }} -->
+              </button>
+            </span>
+          </div>
+        </div>
       </div>
     </ng-container>
   </div>

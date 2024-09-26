@@ -26,44 +26,94 @@ export class CalendarComponent {
   @Input() options!: any;
   lastMonthDateNumber: number = 0;
   currentDate!: Date;
-  currentView: string = 'month'; // Default view
+  currentView: string = 'dayGridMonth'; // Default view
   monthDays: any[] = [];
-  weekDays: any[] = [];
-  selectedDay!: Date;
-  events: CalendarEvent[] = []; // Array to store calendar events
-  newEvent: CalendarEvent = {
-    title: 'testing',
-    date: new Date(),
-    description: 'testing',
-  };
+  events: CalendarEvent[] = []; // Array to store calendar
+  today: string = new Date().toDateString();
   formGroup!: FormGroup;
   visible: boolean = false;
+  weekViewTimes: string[] = [
+    '12am',
+    '',
+    '1am',
+    '',
+    '2am',
+    '',
+    '4am',
+    '',
+    '5am',
+    '',
+    '6am',
+    '',
+    '7am',
+    '',
+    '8am',
+    '',
+    '9am',
+    '',
+    '10am',
+    '',
+    '11am',
+    '',
+    '12pm',
+    '',
+    '1pm',
+    '',
+    '2pm',
+    '',
+    '3pm',
+    '',
+    '4pm',
+    '',
+    '5pm',
+    '',
+    '6pm',
+    '',
+    '7pm',
+    '',
+    '8pm',
+    '',
+    '9pm',
+    '',
+    '10pm',
+    '',
+    '11pm',
+    '',
+  ];
 
   ngOnInit() {
     this.currentDate = new Date(); // Initialize current date
     this.loadMonthView();
-    // this.addEvent();
-    this.loadDateEvents();
     this.formGroup = new FormGroup({
       date: new FormControl(''),
       data: new FormControl(''),
     });
+    this.currentView = this.options.initialView;
   }
 
   // Month view logic
   loadMonthView() {
     this.monthDays = this.generateConsecutiveMonthDays();
+    this.loadDateEvents();
   }
 
   // Week view logic
   loadWeekView() {
-    this.weekDays = this.generateWeekDays();
+    this.monthDays = this.generateWeekDays();
     this.loadDateEvents();
   }
 
   // Day view logic
   loadDayView() {
-    this.selectedDay = this.currentDate;
+    this.monthDays = [
+      {
+        date: this.currentDate.toDateString(),
+        // events: this.options.events,
+        events: [],
+        isCurrent: true,
+      },
+    ];
+    this.loadDateEvents();
   }
 
   generateConsecutiveMonthDays() {
@@ -101,13 +151,14 @@ export class CalendarComponent {
     }
     const nextMonthDateNumber =
       42 - [...currentMonthDays, ...lastMonthDays].length;
-    this.currentDate = new Date();
-    this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+    // this.currentDate = new Date();
+    this.currentDate.setMonth(this.currentDate.getMonth() + 2);
     const nextMonthDays = this.generateMonthDays().slice(
       0,
       nextMonthDateNumber,
     );
-    this.currentDate = new Date();
+    this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+
     return [...lastMonthDays, ...currentMonthDays, ...nextMonthDays];
   }
   generateMonthDays(isCurrent = false) {
@@ -146,7 +197,11 @@ export class CalendarComponent {
     for (let i = 0; i < 7; i++) {
       const currentDay = new Date(startOfWeek);
       currentDay.setDate(startOfWeek.getDate() + i);
-      days.push({ date: currentDay.toDateString() });
+      days.push({
+        date: currentDay.toDateString(),
+        events: [],
+        isCurrent: true,
+      });
     }
 
     return days;
@@ -163,7 +218,7 @@ export class CalendarComponent {
 
   // Navigate to previous period (month, week, day)
   prev() {
-    if (this.currentView === 'month') {
+    if (this.currentView === 'dayGridMonth') {
       this.currentDate.setMonth(this.currentDate.getMonth() - 1);
       this.loadMonthView();
     } else if (this.currentView === 'week') {
@@ -177,7 +232,7 @@ export class CalendarComponent {
 
   // Navigate to next period (month, week, day)
   next() {
-    if (this.currentView === 'month') {
+    if (this.currentView === 'dayGridMonth') {
       this.currentDate.setMonth(this.currentDate.getMonth() + 1);
       this.loadMonthView();
     } else if (this.currentView === 'week') {
@@ -192,7 +247,7 @@ export class CalendarComponent {
   // Set view mode (month, week, day)
   setView(view: string) {
     this.currentView = view;
-    if (view === 'month') {
+    if (view === 'dayGridMonth') {
       this.loadMonthView();
     } else if (view === 'week') {
       this.loadWeekView();
@@ -209,13 +264,13 @@ export class CalendarComponent {
   }
 
   // Add a new event
-  addEvent() {
-    if (this.newEvent.title && this.newEvent.date) {
-      this.events.push({ ...this.newEvent });
-      this.loadMonthView(); // Reload the month view to include the new event
-      this.newEvent = { title: '', date: new Date(), description: '' }; // Reset the form
-    }
-  }
+  // addEvent() {
+  //   if (this.newEvent.title && this.newEvent.date) {
+  //     this.events.push({ ...this.newEvent });
+  //     this.loadMonthView(); // Reload the month view to include the new event
+  //     this.newEvent = { title: '', date: new Date(), description: '' }; // Reset the form
+  //   }
+  // }
 
   onClickEvent(event: any) {
     console.log(event);
@@ -243,14 +298,42 @@ export class CalendarComponent {
     const allEvents = this.options.events.map((event: any) => {
       return {
         ...event,
-        date: new Date(event.date),
+        date: event.start ? new Date(event.start) : new Date(event.date),
+        // start: event.start ? new Date(event.start),
+        height: event.start
+          ? (
+              this.getDifferenceInHours(
+                new Date(event.start),
+                new Date(event.end),
+              ) * 40
+            ).toString()
+          : '40',
+        start24: event.start ? this.getStart24(event.start) * 2 : 0,
       };
     });
     allEvents.forEach((event: any) => {
-      const foundIndex = this.monthDays.findIndex(
+      let foundIndex: number;
+      foundIndex = this.monthDays.findIndex(
         (item) => item.date === event.date.toDateString(),
       );
-      this.monthDays[foundIndex].events.push(event);
+      if (foundIndex !== -1) {
+        this.monthDays[foundIndex].events.push(event);
+      }
+      console.log(event);
     });
+  }
+
+  getDifferenceInHours(date1: Date, date2: Date): number {
+    const millisecondsDifference = date2.getTime() - date1.getTime();
+    const hoursDifference = millisecondsDifference / (1000 * 60 * 60); // Convert to hours
+    return hoursDifference;
+  }
+
+  getStart24(data: string): number {
+    if (data.slice(11, 12) === '0') {
+      return Number(data.slice(12, 13));
+    } else {
+      return Number(data.slice(11, 13));
+    }
   }
 }

@@ -17,7 +17,7 @@
 
   .week-grid {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(8, 1fr);
   }
 
   .day-grid {
@@ -25,14 +25,28 @@
     grid-template-columns: 1fr;
   }
   .calendar-body div,
-  .calendar-grid div,
-  .week-grid div,
-  .day-grid div {
+  .calendar-grid div {
     border-right: 1px solid #ccc; /* Add right border */
     border-bottom: 1px solid #ccc; /* Add bottom border */
     border-top: 1px solid #ccc;
     width: 150px;
     height: 150px;
+  }
+
+  .week-grid div {
+    border-right: 1px solid #ccc; /* Add right border */
+    border-bottom: 1px solid #ccc; /* Add bottom border */
+    border-top: 1px solid #ccc;
+    width: 150px;
+    height: 20px;
+  }
+
+  .day-grid div {
+    border-right: 1px solid #ccc; /* Add right border */
+    border-bottom: 1px solid #ccc; /* Add bottom border */
+    border-top: 1px solid #ccc;
+    width: 500px;
+    height: 20px;
   }
 
   // .calendar-body div:last-child,
@@ -64,4 +78,8 @@
 
 .low-opacity {
   opacity: 0.2; /* Adjust the opacity value as needed */
+}
+
+.today {
+  background-color: rgba(255, 220, 40, 0.15);
 }

@@ -12,12 +12,22 @@ import { CalendarComponent } from './children/calendar/calendar.component';
 export class AppComponent {
   title = 'calendar';
   calendarOptions: any = {
-    // initialView: 'dayGridMonth',
+    initialView: 'dayGridMonth',
     // plugins: [dayGridPlugin, interactionPlugin],
     // dateClick: (arg) => this.handleDateClick(arg),
     events: [
       { title: 'event 1', date: new Date('2024-09-25') },
       { title: 'event 2', date: new Date('2024-09-26') },
+      {
+        title: 'Meeting with John',
+        start: '2024-09-26T10:00:00', // Start time (in ISO format)
+        end: '2024-09-26T15:00:00', // End time (optional)
+      },
+      {
+        title: 'Lunch with Sarah',
+        start: '2024-09-27T12:30:00',
+        end: '2024-09-27T18:30:00',
+      },
     ],
   };
 }
