@@ -25,9 +25,25 @@
             {{ day.date }}
 
             <span *ngFor="let event of day.events" class="event">
-              <button *ngIf="day.date" (click)="onClickEvent(event)">
+              <button
+                *ngIf="day.date && !event.isAllDay"
+                (click)="onClickEvent(event)"
+                [ngClass]="{
+                  'event-button': !event.isAllDay
+                }"
+              >
                 {{ event.title }}
-                {{ event.date }}
+                <!-- {{ event.date }} -->
+              </button>
+              <button
+                *ngIf="day.date && event.isAllDay && event.isStart"
+                (click)="onClickEvent(event)"
+                [ngClass]="{
+                  'allday-button': event.isAllDay
+                }"
+                [style.width]="'450' + 'px'"
+              >
+                {{ event.title }}
               </button>
             </span>
           </div>
@@ -73,10 +89,10 @@
 
     <ng-container *ngIf="currentView === 'day'">
       <div class="day-grid">
-        <!-- <div>
+        <div>
           <div></div>
           <div *ngFor="let time of weekViewTimes">{{ time }}</div>
-        </div> -->
+        </div>
 
         <div *ngFor="let day of monthDays">
           <div

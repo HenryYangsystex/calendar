@@ -22,7 +22,8 @@
 
   .day-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    // grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   .calendar-body div,
   .calendar-grid div {
@@ -82,4 +83,22 @@
 
 .today {
   background-color: rgba(255, 220, 40, 0.15);
+}
+
+.event-button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.allday-button {
+  cursor: pointer;
+  background-color: blue;
+  color: white;
+  border: none;
+  width: 150px;
+  position: relative;
+  z-index: 10;
+  width: 150px;
+  height: 20px;
 }

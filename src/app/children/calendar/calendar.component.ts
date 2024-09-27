@@ -295,22 +295,33 @@ export class CalendarComponent {
   }
 
   loadDateEvents() {
-    const allEvents = this.options.events.map((event: any) => {
-      return {
-        ...event,
-        date: event.start ? new Date(event.start) : new Date(event.date),
-        // start: event.start ? new Date(event.start),
-        height: event.start
-          ? (
-              this.getDifferenceInHours(
-                new Date(event.start),
-                new Date(event.end),
-              ) * 40
-            ).toString()
-          : '40',
-        start24: event.start ? this.getStart24(event.start) * 2 : 0,
-      };
-    });
+    const allEvents = this.processLongEvents(this.options.events).map(
+      (event: any) => {
+        if (
+          this.getDifferenceInHours(
+            new Date(event.start),
+            new Date(event.end),
+          ) > 24
+        ) {
+          console.log(this.splitEventByHour(event));
+        }
+        return {
+          ...event,
+          date: event.start ? new Date(event.start) : new Date(event.date),
+          // start: event.start ? new Date(event.start),
+          height: event.start
+            ? (
+                this.getDifferenceInHours(
+                  new Date(event.start),
+                  new Date(event.end),
+                ) * 40
+              ).toString()
+            : '40',
+          start24: event.start ? this.getStart24(event.start) * 2 : 0,
+          // isAllDay: event.start ? false : true,
+        };
+      },
+    );
     allEvents.forEach((event: any) => {
       let foundIndex: number;
       foundIndex = this.monthDays.findIndex(
@@ -335,5 +346,106 @@ export class CalendarComponent {
     } else {
       return Number(data.slice(11, 13));
     }
+  }
+
+  processLongEvents(data: any) {
+    let allDays: any[] = [];
+    let nonAllDays: any[] = [];
+    data.forEach((item: any) => {
+      console.log(item);
+      if (
+        this.getDifferenceInHours(new Date(item.start), new Date(item.end)) > 24
+      ) {
+        this.splitEventByHour(item).forEach((event: any) => {
+          event.isAllDay = true;
+          allDays.push(event);
+        });
+      } else {
+        nonAllDays.push(item);
+      }
+    });
+
+    return [...allDays, ...nonAllDays];
+  }
+
+  splitEventByHour(event: {
+    title: string;
+    start: string;
+    end: string;
+  }): any[] {
+    const eventsPerDay = [];
+
+    // Convert start and end to Date objects
+    let currentDate = new Date(event.start);
+    const endDate = new Date(event.end);
+    console.log('endDate.toString()');
+    console.log(endDate.toString().slice(0, 15));
+
+    // Loop through each day until the end date (inclusive)
+    while (
+      currentDate <= endDate ||
+      currentDate.toString().slice(0, 15) === endDate.toString().slice(0, 15)
+    ) {
+      console.log(currentDate.toString().slice(0, 15));
+      let newEvent;
+
+      if (eventsPerDay.length === 0) {
+        // First day, keep the exact start time
+        newEvent = {
+          title: event.title,
+          start: currentDate.toString(),
+          end: new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            23,
+            59,
+            59,
+          ).toString(), // End of the day (23:59:59)
+          isStart: true,
+        };
+      } else if (
+        currentDate.toDateString().slice(0, 15) ===
+        endDate.toDateString().slice(0, 15)
+      ) {
+        // Last day, keep the exact end time
+        console.log('end here');
+        newEvent = {
+          title: event.title,
+          start: new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+          ).toString(), // Start of the day (00:00)
+          end: endDate.toString(), // Exact end time
+          isEnd: true,
+        };
+      } else {
+        // Full day event for intermediate days
+        newEvent = {
+          title: '',
+          start: new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+          ).toString(), // Start of the day (00:00)
+          end: new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            23,
+            59,
+            59,
+          ).toString(), // End of the day (23:59:59)
+        };
+      }
+
+      eventsPerDay.push(newEvent);
+
+      // Move to the next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return eventsPerDay;
   }
 }
