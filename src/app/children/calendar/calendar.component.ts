@@ -1,9 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DialogModule } from 'primeng/dialog';
-import { ButtonModule } from 'primeng/button';
-import { CalendarModule } from 'primeng/calendar';
 export interface CalendarEvent {
   title: string;
   date: Date;
@@ -12,13 +9,7 @@ export interface CalendarEvent {
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    DialogModule,
-    ButtonModule,
-    CalendarModule,
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './calendar.component.html',
   styleUrl: './calendar.component.scss',
 })
@@ -30,8 +21,7 @@ export class CalendarComponent {
   monthDays: any[] = [];
   events: CalendarEvent[] = []; // Array to store calendar
   today: string = new Date().toDateString();
-  formGroup!: FormGroup;
-  visible: boolean = false;
+
   weekViewTimes: string[] = [
     '12am',
     '',
@@ -84,11 +74,18 @@ export class CalendarComponent {
   ngOnInit() {
     this.currentDate = new Date(); // Initialize current date
     this.loadMonthView();
-    this.formGroup = new FormGroup({
-      date: new FormControl(''),
-      data: new FormControl(''),
-    });
     this.currentView = this.options.initialView;
+
+    console.log(this.monthDays);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    console.log(changes['options'].currentValue);
+
+    this.monthDays.forEach((item) => {
+      item.events = [];
+    });
+    this.loadDateEvents();
   }
 
   // Month view logic
@@ -151,7 +148,6 @@ export class CalendarComponent {
     }
     const nextMonthDateNumber =
       42 - [...currentMonthDays, ...lastMonthDays].length;
-    // this.currentDate = new Date();
     this.currentDate.setMonth(this.currentDate.getMonth() + 2);
     const nextMonthDays = this.generateMonthDays().slice(
       0,
@@ -203,7 +199,6 @@ export class CalendarComponent {
         isCurrent: true,
       });
     }
-
     return days;
   }
 
@@ -263,52 +258,25 @@ export class CalendarComponent {
     );
   }
 
-  // Add a new event
-  // addEvent() {
-  //   if (this.newEvent.title && this.newEvent.date) {
-  //     this.events.push({ ...this.newEvent });
-  //     this.loadMonthView(); // Reload the month view to include the new event
-  //     this.newEvent = { title: '', date: new Date(), description: '' }; // Reset the form
-  //   }
-  // }
-
   onClickEvent(event: any) {
-    console.log(event);
+    if (event.originalEvent) {
+      this.options.eventClick(event.originalEvent);
+    } else {
+      this.options.eventClick(event);
+    }
   }
 
-  onAddEvent() {
-    console.log(this.formGroup.value.date.toDateString());
-    const foundIndex = this.monthDays.findIndex(
-      (item) => item.date === this.formGroup.value.date.toDateString(),
-    );
-    this.monthDays[foundIndex].events.push({
-      title: 'testingadd',
-      date: this.formGroup.value.date.toDateString(),
-      description: 'testingadd',
-    });
-
-    this.visible = false;
-  }
-
-  showDialog() {
-    this.visible = true;
+  onClickDate(day: any) {
+    const data = new Date(day.date);
+    this.options.dateClick(data);
   }
 
   loadDateEvents() {
     const allEvents = this.processLongEvents(this.options.events).map(
       (event: any) => {
-        if (
-          this.getDifferenceInHours(
-            new Date(event.start),
-            new Date(event.end),
-          ) > 24
-        ) {
-          console.log(this.splitEventByHour(event));
-        }
         return {
           ...event,
-          date: event.start ? new Date(event.start) : new Date(event.date),
-          // start: event.start ? new Date(event.start),
+          date: new Date(event.start),
           height: event.start
             ? (
                 this.getDifferenceInHours(
@@ -318,7 +286,6 @@ export class CalendarComponent {
               ).toString()
             : '40',
           start24: event.start ? this.getStart24(event.start) * 2 : 0,
-          // isAllDay: event.start ? false : true,
         };
       },
     );
@@ -330,7 +297,6 @@ export class CalendarComponent {
       if (foundIndex !== -1) {
         this.monthDays[foundIndex].events.push(event);
       }
-      console.log(event);
     });
   }
 
@@ -352,7 +318,6 @@ export class CalendarComponent {
     let allDays: any[] = [];
     let nonAllDays: any[] = [];
     data.forEach((item: any) => {
-      console.log(item);
       if (
         this.getDifferenceInHours(new Date(item.start), new Date(item.end)) > 24
       ) {
@@ -364,7 +329,6 @@ export class CalendarComponent {
         nonAllDays.push(item);
       }
     });
-
     return [...allDays, ...nonAllDays];
   }
 
@@ -378,15 +342,11 @@ export class CalendarComponent {
     // Convert start and end to Date objects
     let currentDate = new Date(event.start);
     const endDate = new Date(event.end);
-    console.log('endDate.toString()');
-    console.log(endDate.toString().slice(0, 15));
-
     // Loop through each day until the end date (inclusive)
     while (
       currentDate <= endDate ||
       currentDate.toString().slice(0, 15) === endDate.toString().slice(0, 15)
     ) {
-      console.log(currentDate.toString().slice(0, 15));
       let newEvent;
 
       if (eventsPerDay.length === 0) {
@@ -402,14 +362,14 @@ export class CalendarComponent {
             59,
             59,
           ).toString(), // End of the day (23:59:59)
-          isStart: true,
+          originalEvent: event,
         };
       } else if (
         currentDate.toDateString().slice(0, 15) ===
         endDate.toDateString().slice(0, 15)
       ) {
         // Last day, keep the exact end time
-        console.log('end here');
+        // console.log('end here');
         newEvent = {
           title: event.title,
           start: new Date(
@@ -419,11 +379,12 @@ export class CalendarComponent {
           ).toString(), // Start of the day (00:00)
           end: endDate.toString(), // Exact end time
           isEnd: true,
+          originalEvent: event,
         };
       } else {
         // Full day event for intermediate days
         newEvent = {
-          title: '',
+          title: event.title,
           start: new Date(
             currentDate.getFullYear(),
             currentDate.getMonth(),
@@ -437,6 +398,7 @@ export class CalendarComponent {
             59,
             59,
           ).toString(), // End of the day (23:59:59)
+          originalEvent: event,
         };
       }
 
@@ -445,7 +407,45 @@ export class CalendarComponent {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
+    return this.getFirstEventOfEachWeek(eventsPerDay);
+  }
 
-    return eventsPerDay;
+  getFirstEventOfEachWeek(events: any[]) {
+    const seenWeeks = new Set<number>();
+    const firstEvents: any[] = [];
+    let currentIndex: number = -1;
+    const secondEvents: any[] = [];
+    events.forEach((event) => {
+      const eventStartDate = new Date(event.start);
+
+      // Calculate the week number where the week starts on Sunday
+      const firstDayOfYear = new Date(eventStartDate.getFullYear(), 0, 1);
+      const pastDaysOfYear =
+        (eventStartDate.getTime() - firstDayOfYear.getTime()) /
+        (24 * 60 * 60 * 1000);
+
+      const weekNumber = Math.floor(
+        (pastDaysOfYear + firstDayOfYear.getDay()) / 7,
+      );
+
+      // If this week hasn't been encountered yet, add the event
+      if (!seenWeeks.has(weekNumber)) {
+        currentIndex = currentIndex + 1;
+        firstEvents.push(event);
+        let copiedObject = Object.assign({}, event);
+        copiedObject.title = '';
+        secondEvents.push(copiedObject);
+        firstEvents[currentIndex].width = 150;
+        firstEvents[currentIndex].isStart = true;
+        seenWeeks.add(weekNumber);
+      } else {
+        event.title = '';
+        secondEvents.push(event);
+        firstEvents[currentIndex].width = firstEvents[currentIndex].width + 150;
+      }
+    });
+    // console.log('henry');
+    // console.log([...firstEvents, ...secondEvents]);
+    return [...firstEvents, ...secondEvents];
   }
 }

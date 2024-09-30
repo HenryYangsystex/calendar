@@ -93,7 +93,7 @@
 
 .allday-button {
   cursor: pointer;
-  background-color: blue;
+  background-color: #3788d8;
   color: white;
   border: none;
   width: 150px;
@@ -101,4 +101,9 @@
   z-index: 10;
   width: 150px;
   height: 20px;
+  // opacity: 0.2;
+}
+
+.allday-secondary-button {
+  opacity: 0;
 }
