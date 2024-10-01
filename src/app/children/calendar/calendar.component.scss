@@ -107,3 +107,11 @@
 .allday-secondary-button {
   opacity: 0;
 }
+
+.date-label {
+  cursor: pointer;
+  &:hover {
+    color: blue; // Change this to whatever style you want
+    background-color: lightgray;
+  }
+}

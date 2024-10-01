@@ -28,7 +28,7 @@ export class AppComponent {
   events = [
     {
       title: 'Meeting with John',
-      start: '2024-09-26', // Start time (in ISO format)
+      start: '2024-09-26',
     },
     {
       title: 'Lunch with Sarah',
@@ -53,7 +53,6 @@ export class AppComponent {
   ];
   calendarOptions: any = {
     initialView: 'dayGridMonth',
-    // plugins: [dayGridPlugin, interactionPlugin],
     eventClick: (arg: any) => this.handleEventClick(arg),
     dateClick: (arg: any) => this.handleDateClick(arg),
     events: this.events,
@@ -88,8 +87,6 @@ export class AppComponent {
     console.log(arg);
     this.selectedDate = arg;
     if (userInput !== null) {
-      // console.log('You entered: ' + userInput);
-      // console.log(this.selectedDate);
       this.events.push({
         title: userInput,
         start: this.transferDateFormat(this.selectedDate),

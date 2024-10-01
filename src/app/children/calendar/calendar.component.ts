@@ -21,7 +21,6 @@ export class CalendarComponent {
   monthDays: any[] = [];
   events: CalendarEvent[] = []; // Array to store calendar
   today: string = new Date().toDateString();
-
   weekViewTimes: string[] = [
     '12am',
     '',
@@ -75,8 +74,6 @@ export class CalendarComponent {
     this.currentDate = new Date(); // Initialize current date
     this.loadMonthView();
     this.currentView = this.options.initialView;
-
-    console.log(this.monthDays);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -329,7 +326,15 @@ export class CalendarComponent {
         nonAllDays.push(item);
       }
     });
-    return [...allDays, ...nonAllDays];
+    return [
+      ...allDays,
+      ...nonAllDays.map((event: any) => {
+        return {
+          ...event,
+          isAllDay: false,
+        };
+      }),
+    ];
   }
 
   splitEventByHour(event: {

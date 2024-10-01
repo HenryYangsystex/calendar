@@ -20,9 +20,10 @@
               'low-opacity': !day.isCurrent,
               today: day.date === today
             }"
-            (click)="onClickDate(day)"
           >
-            {{ day.date }}
+            <span (click)="onClickDate(day)" class="date-label">{{
+              day.date
+            }}</span>
 
             <span *ngFor="let event of day.events; let i = index" class="event">
               <button
@@ -32,7 +33,9 @@
                   'event-button': !event.isAllDay
                 }"
                 [style.margin-top]="
-                  !event.isAllDay && day.events[i - 1].isAllDay ? '25px' : '0px'
+                  !event?.isAllDay && day.events[i - 1]?.isAllDay
+                    ? '25px'
+                    : '0px'
                 "
               >
                 {{ event.title }}
