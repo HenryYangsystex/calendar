@@ -326,7 +326,18 @@ export class CalendarComponent {
         nonAllDays.push(item);
       }
     });
-    return [
+    console.log(
+      this.setEventsTopMargin([
+        ...allDays,
+        ...nonAllDays.map((event: any) => {
+          return {
+            ...event,
+            isAllDay: false,
+          };
+        }),
+      ]),
+    );
+    return this.setEventsTopMargin([
       ...allDays,
       ...nonAllDays.map((event: any) => {
         return {
@@ -334,7 +345,7 @@ export class CalendarComponent {
           isAllDay: false,
         };
       }),
-    ];
+    ]);
   }
 
   splitEventByHour(event: {
@@ -452,5 +463,46 @@ export class CalendarComponent {
     // console.log('henry');
     // console.log([...firstEvents, ...secondEvents]);
     return [...firstEvents, ...secondEvents];
+  }
+
+  setEventsTopMargin(data: any[]) {
+    let result = data.map((event: any) => {
+      return {
+        ...event,
+        label: new Date(event.start).getDate(),
+        labelMonth: new Date(event.start).getMonth(),
+        topMargin: 0,
+      };
+    });
+    result.sort((a, b) => {
+      // First, compare by labelMonth
+      if (a.labelMonth !== b.labelMonth) {
+        return a.labelMonth - b.labelMonth; // Ascending order
+      }
+      // If labelMonth is the same, compare by label
+      return a.label - b.label; // Ascending order
+    });
+    for (let i = 0; i < result.length; i++) {
+      // Inner loop runs through all the elements before the current element
+      if (result[i].title === '') {
+        for (let k = i - 1; k >= 0; k--) {
+          if (result[k].title !== '') {
+            result[i].topMargin = result[k].topMargin;
+            break;
+          }
+        }
+      }
+      for (let j = i - 1; j >= 0; j--) {
+        if (
+          result[j].label === result[i].label &&
+          result[j].labelMonth === result[i].labelMonth
+        ) {
+          if (result[i].topMargin === 0)
+            result[i].topMargin = result[j].topMargin + 25;
+          break;
+        }
+      }
+    }
+    return result;
   }
 }

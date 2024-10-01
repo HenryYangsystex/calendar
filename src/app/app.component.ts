@@ -25,21 +25,23 @@ export class AppComponent {
   visible: boolean = false;
   selectedEvent!: any;
   selectedDate!: any;
-  events = [
+  events: any[] = [
+    {
+      title: 'Multi-day Event',
+      start: '2024-09-20', // Start date of the event
+      end: '2024-09-25', // End date of the event (exclusive, ends before midnight)
+    },
     {
       title: 'Meeting with John',
-      start: '2024-09-26',
+      start: '2024-09-24',
+      end: '2024-09-28',
     },
     {
       title: 'Lunch with Sarah',
       start: '2024-09-26T12:30:00',
       end: '2024-09-26T18:30:00',
     },
-    {
-      title: 'Multi-day Event',
-      start: '2024-09-20', // Start date of the event
-      end: '2024-09-25', // End date of the event (exclusive, ends before midnight)
-    },
+
     {
       title: 'Another Long Event',
       start: '2024-10-01',
@@ -111,6 +113,8 @@ export class AppComponent {
     const index = this.events.findIndex(
       (item: any) => item.title === this.selectedEvent.title,
     );
+    console.log('the index is');
+    console.log(index);
     this.events[index].start = this.formGroup.value.start;
     this.events[index].end = this.formGroup.value.end;
     this.visible = false;
