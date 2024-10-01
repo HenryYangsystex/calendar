@@ -77,7 +77,7 @@ export class CalendarComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(changes['options'].currentValue);
+    // console.log(changes['options'].currentValue);
 
     this.monthDays.forEach((item) => {
       item.events = [];
@@ -326,22 +326,12 @@ export class CalendarComponent {
         nonAllDays.push(item);
       }
     });
-    console.log(
-      this.setEventsTopMargin([
-        ...allDays,
-        ...nonAllDays.map((event: any) => {
-          return {
-            ...event,
-            isAllDay: false,
-          };
-        }),
-      ]),
-    );
     return this.setEventsTopMargin([
       ...allDays,
       ...nonAllDays.map((event: any) => {
         return {
           ...event,
+          isStart: true,
           isAllDay: false,
         };
       }),
@@ -385,7 +375,6 @@ export class CalendarComponent {
         endDate.toDateString().slice(0, 15)
       ) {
         // Last day, keep the exact end time
-        // console.log('end here');
         newEvent = {
           title: event.title,
           start: new Date(
@@ -450,7 +439,7 @@ export class CalendarComponent {
         firstEvents.push(event);
         let copiedObject = Object.assign({}, event);
         copiedObject.title = '';
-        secondEvents.push(copiedObject);
+        // secondEvents.push(copiedObject);
         firstEvents[currentIndex].width = 150;
         firstEvents[currentIndex].isStart = true;
         seenWeeks.add(weekNumber);
@@ -460,8 +449,6 @@ export class CalendarComponent {
         firstEvents[currentIndex].width = firstEvents[currentIndex].width + 150;
       }
     });
-    // console.log('henry');
-    // console.log([...firstEvents, ...secondEvents]);
     return [...firstEvents, ...secondEvents];
   }
 
@@ -486,7 +473,9 @@ export class CalendarComponent {
       // Inner loop runs through all the elements before the current element
       if (result[i].title === '') {
         for (let k = i - 1; k >= 0; k--) {
-          if (result[k].title !== '') {
+          if (
+            result[k].originalEvent?.title === result[i].originalEvent?.title
+          ) {
             result[i].topMargin = result[k].topMargin;
             break;
           }
@@ -497,9 +486,10 @@ export class CalendarComponent {
           result[j].label === result[i].label &&
           result[j].labelMonth === result[i].labelMonth
         ) {
-          if (result[i].topMargin === 0)
+          if (result[i].topMargin === 0 && result[i].title !== '') {
             result[i].topMargin = result[j].topMargin + 25;
-          break;
+            break;
+          }
         }
       }
     }

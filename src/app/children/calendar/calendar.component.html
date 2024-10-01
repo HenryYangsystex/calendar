@@ -33,30 +33,23 @@
                   'event-button': !event.isAllDay
                 }"
                 [style.margin-top]="
-                  !event?.isAllDay && day.events[i - 1]?.isAllDay
+                  !event.isAllDay && !day.events[i - 1]?.isStart
                     ? event.topMargin + 'px'
                     : '0px'
                 "
               >
                 {{ event.title }}
               </button>
-              <!-- <button
-                *ngIf="day.date && event.isAllDay && !event.isStart"
-                [ngClass]="{
-                  'allday-secondary-button': true
-                }"
-                [style.width]="150 + 'px'"
-              >
-                {{ event.title }}
-              </button> -->
               <button
-                *ngIf="day.date && event.isAllDay && event.isStart"
+                *ngIf="day.date && event.isAllDay && event?.isStart"
                 (click)="onClickEvent(event)"
                 [ngClass]="{
                   'allday-button': event.isAllDay
                 }"
                 [style.width]="event.width + 'px'"
-                [style.margin-top]="event.topMargin + 'px'"
+                [style.margin-top]="
+                  !day.events[i - 1]?.isStart ? event.topMargin + 'px' : '0px'
+                "
               >
                 {{ event.title }}
               </button>

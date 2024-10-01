@@ -28,20 +28,24 @@ export class AppComponent {
   events: any[] = [
     {
       title: 'Multi-day Event',
-      start: '2024-09-20', // Start date of the event
-      end: '2024-09-25', // End date of the event (exclusive, ends before midnight)
+      start: '2024-10-20', // Start date of the event
+      end: '2024-10-25', // End date of the event (exclusive, ends before midnight)
     },
     {
       title: 'Meeting with John',
-      start: '2024-09-24',
-      end: '2024-09-28',
+      start: '2024-10-23',
+      end: '2024-10-27',
     },
     {
       title: 'Lunch with Sarah',
-      start: '2024-09-26T12:30:00',
-      end: '2024-09-26T18:30:00',
+      start: '2024-10-26T12:30:00',
+      end: '2024-10-26T18:30:00',
     },
-
+    {
+      title: 'Lunch with Henry',
+      start: '2024-10-16T12:30:00',
+      end: '2024-10-16T18:30:00',
+    },
     {
       title: 'Another Long Event',
       start: '2024-10-01',
@@ -49,8 +53,8 @@ export class AppComponent {
     },
     {
       title: 'Multi-day Event with Time',
-      start: '2024-09-25T14:00:00', // Starts at 2:00 PM on September 25th
-      end: '2024-09-28T10:30:00', // Ends at 10:30 AM on September 28th
+      start: '2024-10-25T14:00:00', // Starts at 2:00 PM on September 25th
+      end: '2024-10-28T10:30:00', // Ends at 10:30 AM on September 28th
     },
   ];
   calendarOptions: any = {
@@ -74,6 +78,7 @@ export class AppComponent {
   }
 
   showDialog() {
+    this.formGroup.reset();
     this.formGroup.patchValue(this.selectedEvent);
     this.visible = true;
   }
