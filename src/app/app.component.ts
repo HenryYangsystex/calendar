@@ -5,6 +5,9 @@ import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Event } from './children/models/event.model';
+import { CalendarOptions } from './children/models/options.model';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -25,7 +28,7 @@ export class AppComponent {
   visible: boolean = false;
   selectedEvent!: any;
   selectedDate!: any;
-  events: any[] = [
+  events: Event[] = [
     {
       title: 'Multi-day Event',
       start: '2024-10-20', // Start date of the event
@@ -57,7 +60,7 @@ export class AppComponent {
       end: '2024-10-28T10:30:00', // Ends at 10:30 AM on September 28th
     },
   ];
-  calendarOptions: any = {
+  calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
     eventClick: (arg: any) => this.handleEventClick(arg),
     dateClick: (arg: any) => this.handleDateClick(arg),
@@ -70,11 +73,6 @@ export class AppComponent {
       start: new FormControl(''),
       end: new FormControl(''),
     });
-  }
-
-  onAddEvent() {
-    console.log(this.formGroup.value.date.toDateString());
-    this.visible = false;
   }
 
   showDialog() {
@@ -90,36 +88,33 @@ export class AppComponent {
   }
 
   handleDateClick(arg: any) {
-    let userInput = prompt('Please enter your input:');
+    let userInput = prompt('Please enter your title:');
     console.log(arg);
     this.selectedDate = arg;
     if (userInput !== null) {
       this.events.push({
         title: userInput,
         start: this.transferDateFormat(this.selectedDate),
+        end: '',
       });
       this.calendarOptions = { ...this.calendarOptions, events: this.events };
     } else {
       alert('Input was canceled.');
     }
-    // this.showDialog();
   }
 
   onDeleteEvent(): void {
     this.events = this.events.filter(
-      (item: any) => item.title !== this.selectedEvent.title,
+      (item: Event) => item.title !== this.selectedEvent.title,
     );
     this.visible = false;
     this.calendarOptions = { ...this.calendarOptions, events: this.events };
-    console.log(this.calendarOptions.events);
   }
 
   onEditEvent(): void {
     const index = this.events.findIndex(
-      (item: any) => item.title === this.selectedEvent.title,
+      (item: Event) => item.title === this.selectedEvent.title,
     );
-    console.log('the index is');
-    console.log(index);
     this.events[index].start = this.formGroup.value.start;
     this.events[index].end = this.formGroup.value.end;
     this.visible = false;
@@ -135,8 +130,6 @@ export class AppComponent {
 
     // Get the date (1-31)
     const day = data.getDate();
-    console.log('testing');
-    console.log(`${year}-${month}-${day}`);
     return `${year}-${month}-${day}`;
   }
 }

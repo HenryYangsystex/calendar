@@ -77,7 +77,7 @@ export class CalendarComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // console.log(changes['options'].currentValue);
+    console.log(changes['options'].currentValue);
 
     this.monthDays.forEach((item) => {
       item.events = [];
