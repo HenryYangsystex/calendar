@@ -67,7 +67,7 @@ export class AppComponent {
     events: this.events,
   };
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.formGroup = new FormGroup({
       title: new FormControl({ value: '', disabled: true }),
       start: new FormControl(''),
@@ -75,19 +75,19 @@ export class AppComponent {
     });
   }
 
-  showDialog() {
+  showDialog(): void {
     this.formGroup.reset();
     this.formGroup.patchValue(this.selectedEvent);
     this.visible = true;
   }
 
-  handleEventClick(arg: any) {
+  handleEventClick(arg: any): void {
     console.log(arg);
     this.selectedEvent = arg;
     this.showDialog();
   }
 
-  handleDateClick(arg: any) {
+  handleDateClick(arg: any): void {
     let userInput = prompt('Please enter your title:');
     console.log(arg);
     this.selectedDate = arg;
@@ -121,7 +121,7 @@ export class AppComponent {
     this.calendarOptions = { ...this.calendarOptions, events: this.events };
   }
 
-  transferDateFormat(date: any) {
+  transferDateFormat(date: string): string {
     const data = new Date(date);
     const year = data.getFullYear();
 

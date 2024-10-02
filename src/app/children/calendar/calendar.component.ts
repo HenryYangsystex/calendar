@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, SimpleChanges } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { CalendarOptions } from '../models/options.model';
+import { EventDetails, EventObject } from '../models/day.model';
 export interface CalendarEvent {
   title: string;
   date: Date;
@@ -14,7 +16,7 @@ export interface CalendarEvent {
   styleUrl: './calendar.component.scss',
 })
 export class CalendarComponent {
-  @Input() options!: any;
+  @Input() options!: CalendarOptions;
   lastMonthDateNumber: number = 0;
   currentDate!: Date;
   currentView: string = 'dayGridMonth'; // Default view
@@ -255,7 +257,7 @@ export class CalendarComponent {
     );
   }
 
-  onClickEvent(event: any) {
+  onClickEvent(event: EventDetails) {
     if (event.originalEvent) {
       this.options.eventClick(event.originalEvent);
     } else {
@@ -263,14 +265,14 @@ export class CalendarComponent {
     }
   }
 
-  onClickDate(day: any) {
+  onClickDate(day: EventObject) {
     const data = new Date(day.date);
     this.options.dateClick(data);
   }
 
   loadDateEvents() {
     const allEvents = this.processLongEvents(this.options.events).map(
-      (event: any) => {
+      (event: EventDetails) => {
         return {
           ...event,
           date: new Date(event.start),
@@ -311,14 +313,14 @@ export class CalendarComponent {
     }
   }
 
-  processLongEvents(data: any) {
-    let allDays: any[] = [];
-    let nonAllDays: any[] = [];
-    data.forEach((item: any) => {
+  processLongEvents(data: any): EventDetails[] {
+    let allDays: EventDetails[] = [];
+    let nonAllDays: EventDetails[] = [];
+    data.forEach((item: EventDetails) => {
       if (
         this.getDifferenceInHours(new Date(item.start), new Date(item.end)) > 24
       ) {
-        this.splitEventByHour(item).forEach((event: any) => {
+        this.splitEventByHour(item).forEach((event: EventDetails) => {
           event.isAllDay = true;
           allDays.push(event);
         });
@@ -328,9 +330,10 @@ export class CalendarComponent {
     });
     return this.setEventsTopMargin([
       ...allDays,
-      ...nonAllDays.map((event: any) => {
+      ...nonAllDays.map((event: EventDetails) => {
         return {
           ...event,
+          originalEvent: event,
           isStart: true,
           isAllDay: false,
         };
@@ -342,7 +345,7 @@ export class CalendarComponent {
     title: string;
     start: string;
     end: string;
-  }): any[] {
+  }): EventDetails[] {
     const eventsPerDay = [];
 
     // Convert start and end to Date objects
@@ -415,7 +418,7 @@ export class CalendarComponent {
     return this.getFirstEventOfEachWeek(eventsPerDay);
   }
 
-  getFirstEventOfEachWeek(events: any[]) {
+  getFirstEventOfEachWeek(events: any[]): EventDetails[] {
     const seenWeeks = new Set<number>();
     const firstEvents: any[] = [];
     let currentIndex: number = -1;
@@ -452,8 +455,8 @@ export class CalendarComponent {
     return [...firstEvents, ...secondEvents];
   }
 
-  setEventsTopMargin(data: any[]) {
-    let result = data.map((event: any) => {
+  setEventsTopMargin(data: EventDetails[]) {
+    let result = data.map((event: EventDetails) => {
       return {
         ...event,
         label: new Date(event.start).getDate(),
@@ -466,9 +469,18 @@ export class CalendarComponent {
       if (a.labelMonth !== b.labelMonth) {
         return a.labelMonth - b.labelMonth; // Ascending order
       }
+
       // If labelMonth is the same, compare by label
-      return a.label - b.label; // Ascending order
+      if (a.label !== b.label) {
+        return a.label - b.label; // Ascending order
+      }
+
+      // If both labelMonth and label are the same, compare by originalEvent.start
+      const dateA = new Date(a.originalEvent.start).getTime();
+      const dateB = new Date(b.originalEvent.start).getTime();
+      return dateA - dateB; // Ascending order based on start date
     });
+
     for (let i = 0; i < result.length; i++) {
       // Inner loop runs through all the elements before the current element
       if (result[i].title === '') {
@@ -487,12 +499,13 @@ export class CalendarComponent {
           result[j].labelMonth === result[i].labelMonth
         ) {
           if (result[i].topMargin === 0 && result[i].title !== '') {
-            result[i].topMargin = result[j].topMargin + 25;
+            result[i].topMargin = result[j].topMargin + 22;
             break;
           }
         }
       }
     }
+    console.log(result);
     return result;
   }
 }
