@@ -7,6 +7,7 @@ import { CalendarModule } from 'primeng/calendar';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Event } from './children/models/event.model';
 import { CalendarOptions } from './children/models/options.model';
+import { Day, EventDetails } from './children/models/day.model';
 
 @Component({
   selector: 'app-root',
@@ -26,7 +27,7 @@ export class AppComponent {
   title = 'calendar';
   formGroup!: FormGroup;
   visible: boolean = false;
-  selectedEvent!: any;
+  selectedEvent!: EventDetails;
   selectedDate!: any;
   events: Event[] = [
     {
@@ -60,10 +61,12 @@ export class AppComponent {
       end: '2024-10-28T10:30:00', // Ends at 10:30 AM on September 28th
     },
   ];
+
+  // calendar設定
   calendarOptions: CalendarOptions = {
     initialView: 'dayGridMonth',
-    eventClick: (arg: any) => this.handleEventClick(arg),
-    dateClick: (arg: any) => this.handleDateClick(arg),
+    eventClick: (arg: EventDetails) => this.handleEventClick(arg),
+    dateClick: (arg: Day) => this.handleDateClick(arg),
     events: this.events,
   };
 
@@ -75,19 +78,22 @@ export class AppComponent {
     });
   }
 
+  // 跳出dialog
   showDialog(): void {
     this.formGroup.reset();
     this.formGroup.patchValue(this.selectedEvent);
     this.visible = true;
   }
 
-  handleEventClick(arg: any): void {
+  // 點擊行程
+  handleEventClick(arg: EventDetails): void {
     console.log(arg);
     this.selectedEvent = arg;
     this.showDialog();
   }
 
-  handleDateClick(arg: any): void {
+  // 點擊日期
+  handleDateClick(arg: Day): void {
     let userInput = prompt('Please enter your title:');
     console.log(arg);
     this.selectedDate = arg;
@@ -103,6 +109,7 @@ export class AppComponent {
     }
   }
 
+  // 刪除行程
   onDeleteEvent(): void {
     this.events = this.events.filter(
       (item: Event) => item.title !== this.selectedEvent.title,
@@ -111,6 +118,7 @@ export class AppComponent {
     this.calendarOptions = { ...this.calendarOptions, events: this.events };
   }
 
+  // 編輯行程
   onEditEvent(): void {
     const index = this.events.findIndex(
       (item: Event) => item.title === this.selectedEvent.title,
@@ -121,6 +129,7 @@ export class AppComponent {
     this.calendarOptions = { ...this.calendarOptions, events: this.events };
   }
 
+  // 轉換日期格式
   transferDateFormat(date: string): string {
     const data = new Date(date);
     const year = data.getFullYear();

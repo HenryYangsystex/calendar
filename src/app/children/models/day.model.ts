@@ -7,11 +7,18 @@ export interface EventDetails {
   label: number;
   labelMonth: number;
   topMargin: number;
-  date: string;
+  date: Date;
   height: string;
   start24: number;
-  width?: number;
+  width: number;
   isStart?: boolean;
+}
+
+export interface SimpleEvent {
+  title: string;
+  start: string;
+  end: string;
+  originalEvent: OriginalEvent;
 }
 
 export interface OriginalEvent {
@@ -20,7 +27,7 @@ export interface OriginalEvent {
   end: string;
 }
 
-export interface EventObject {
+export interface Day {
   date: string;
   events: EventDetails[];
   isCurrent: boolean;

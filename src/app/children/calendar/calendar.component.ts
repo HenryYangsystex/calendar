@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { CalendarOptions } from '../models/options.model';
-import { EventDetails, EventObject } from '../models/day.model';
+import { EventDetails, Day, OriginalEvent } from '../models/day.model';
 export interface CalendarEvent {
   title: string;
   date: Date;
@@ -20,8 +20,8 @@ export class CalendarComponent {
   lastMonthDateNumber: number = 0;
   currentDate!: Date;
   currentView: string = 'dayGridMonth'; // Default view
-  monthDays: any[] = [];
-  events: CalendarEvent[] = []; // Array to store calendar
+  monthDays: Day[] = [];
+  events: CalendarEvent[] = [];
   today: string = new Date().toDateString();
   weekViewTimes: string[] = [
     '12am',
@@ -87,24 +87,23 @@ export class CalendarComponent {
     this.loadDateEvents();
   }
 
-  // Month view logic
+  // 月畫面
   loadMonthView() {
     this.monthDays = this.generateConsecutiveMonthDays();
     this.loadDateEvents();
   }
 
-  // Week view logic
+  // 週畫面
   loadWeekView() {
     this.monthDays = this.generateWeekDays();
     this.loadDateEvents();
   }
 
-  // Day view logic
+  // 日畫面
   loadDayView() {
     this.monthDays = [
       {
         date: this.currentDate.toDateString(),
-        // events: this.options.events,
         events: [],
         isCurrent: true,
       },
@@ -112,6 +111,7 @@ export class CalendarComponent {
     this.loadDateEvents();
   }
 
+  // 產生月畫面日期
   generateConsecutiveMonthDays() {
     const currentMonthDays = this.generateMonthDays(true);
     switch (currentMonthDays[0].date.slice(0, 3)) {
@@ -141,7 +141,7 @@ export class CalendarComponent {
     }
     this.currentDate.setMonth(this.currentDate.getMonth() - 1);
 
-    let lastMonthDays: any[] = [];
+    let lastMonthDays: Day[] = [];
     if (this.lastMonthDateNumber !== 0) {
       lastMonthDays = this.generateMonthDays().slice(-this.lastMonthDateNumber);
     }
@@ -156,6 +156,8 @@ export class CalendarComponent {
 
     return [...lastMonthDays, ...currentMonthDays, ...nextMonthDays];
   }
+
+  //產生一個月的日期
   generateMonthDays(isCurrent = false) {
     const startOfMonth = new Date(
       this.currentDate.getFullYear(),
@@ -184,7 +186,7 @@ export class CalendarComponent {
     return days;
   }
 
-  // Generate days for the current week
+  // 產生週日期
   generateWeekDays() {
     const startOfWeek = this.getStartOfWeek(this.currentDate);
     const days = [];
@@ -201,7 +203,7 @@ export class CalendarComponent {
     return days;
   }
 
-  // Helper method to get the start of the week (Sunday)
+  // 取得星期天
   getStartOfWeek(date: Date) {
     const startOfWeek = new Date(date);
     const day = startOfWeek.getDay();
@@ -210,7 +212,7 @@ export class CalendarComponent {
     return startOfWeek;
   }
 
-  // Navigate to previous period (month, week, day)
+  // 上一頁
   prev() {
     if (this.currentView === 'dayGridMonth') {
       this.currentDate.setMonth(this.currentDate.getMonth() - 1);
@@ -224,7 +226,7 @@ export class CalendarComponent {
     }
   }
 
-  // Navigate to next period (month, week, day)
+  // 下一頁
   next() {
     if (this.currentView === 'dayGridMonth') {
       this.currentDate.setMonth(this.currentDate.getMonth() + 1);
@@ -238,7 +240,7 @@ export class CalendarComponent {
     }
   }
 
-  // Set view mode (month, week, day)
+  // 切換月週日
   setView(view: string) {
     this.currentView = view;
     if (view === 'dayGridMonth') {
@@ -250,13 +252,14 @@ export class CalendarComponent {
     }
   }
 
-  // Get events for a specific day
+  // 取得當日行程
   getEventsForDay(day: Date) {
     return this.events.filter(
       (event) => event.date.toDateString() === day.toDateString(),
     );
   }
 
+  // 按下行程
   onClickEvent(event: EventDetails) {
     if (event.originalEvent) {
       this.options.eventClick(event.originalEvent);
@@ -265,11 +268,13 @@ export class CalendarComponent {
     }
   }
 
-  onClickDate(day: EventObject) {
+  // 按下日期
+  onClickDate(day: Day) {
     const data = new Date(day.date);
     this.options.dateClick(data);
   }
 
+  // 取得所有行程
   loadDateEvents() {
     const allEvents = this.processLongEvents(this.options.events).map(
       (event: EventDetails) => {
@@ -288,7 +293,7 @@ export class CalendarComponent {
         };
       },
     );
-    allEvents.forEach((event: any) => {
+    allEvents.forEach((event: EventDetails) => {
       let foundIndex: number;
       foundIndex = this.monthDays.findIndex(
         (item) => item.date === event.date.toDateString(),
@@ -299,12 +304,14 @@ export class CalendarComponent {
     });
   }
 
+  // 取得一個行程有多少小時
   getDifferenceInHours(date1: Date, date2: Date): number {
     const millisecondsDifference = date2.getTime() - date1.getTime();
     const hoursDifference = millisecondsDifference / (1000 * 60 * 60); // Convert to hours
     return hoursDifference;
   }
 
+  //取得一個行程開始時間24小時制
   getStart24(data: string): number {
     if (data.slice(11, 12) === '0') {
       return Number(data.slice(12, 13));
@@ -313,10 +320,11 @@ export class CalendarComponent {
     }
   }
 
-  processLongEvents(data: any): EventDetails[] {
+  // 處理跨天行程
+  processLongEvents(data: OriginalEvent[]): EventDetails[] {
     let allDays: EventDetails[] = [];
     let nonAllDays: EventDetails[] = [];
-    data.forEach((item: EventDetails) => {
+    data.forEach((item: OriginalEvent) => {
       if (
         this.getDifferenceInHours(new Date(item.start), new Date(item.end)) > 24
       ) {
@@ -325,7 +333,7 @@ export class CalendarComponent {
           allDays.push(event);
         });
       } else {
-        nonAllDays.push(item);
+        nonAllDays.push(item as EventDetails);
       }
     });
     return this.setEventsTopMargin([
@@ -341,6 +349,7 @@ export class CalendarComponent {
     ]);
   }
 
+  // 切分跨日行程
   splitEventByHour(event: {
     title: string;
     start: string;
@@ -415,14 +424,15 @@ export class CalendarComponent {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    return this.getFirstEventOfEachWeek(eventsPerDay);
+    return this.getFirstEventOfEachWeek(eventsPerDay as EventDetails[]);
   }
 
-  getFirstEventOfEachWeek(events: any[]): EventDetails[] {
+  // 區分整天行程和非整天行程
+  getFirstEventOfEachWeek(events: EventDetails[]): EventDetails[] {
     const seenWeeks = new Set<number>();
-    const firstEvents: any[] = [];
+    const firstEvents: EventDetails[] = [];
     let currentIndex: number = -1;
-    const secondEvents: any[] = [];
+    const secondEvents: EventDetails[] = [];
     events.forEach((event) => {
       const eventStartDate = new Date(event.start);
 
@@ -455,6 +465,7 @@ export class CalendarComponent {
     return [...firstEvents, ...secondEvents];
   }
 
+  //設定行程top margin
   setEventsTopMargin(data: EventDetails[]) {
     let result = data.map((event: EventDetails) => {
       return {
@@ -475,7 +486,12 @@ export class CalendarComponent {
         return a.label - b.label; // Ascending order
       }
 
-      // If both labelMonth and label are the same, compare by originalEvent.start
+      // Then, compare by isAllDay (true comes first)
+      if (a.isAllDay !== b.isAllDay) {
+        return a.isAllDay ? -1 : 1;
+      }
+
+      // Finally, if all previous checks are the same, compare by originalEvent.start
       const dateA = new Date(a.originalEvent.start).getTime();
       const dateB = new Date(b.originalEvent.start).getTime();
       return dateA - dateB; // Ascending order based on start date
@@ -505,7 +521,6 @@ export class CalendarComponent {
         }
       }
     }
-    console.log(result);
     return result;
   }
 }
