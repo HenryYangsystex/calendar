@@ -19,6 +19,7 @@ export interface SimpleEvent {
   start: string;
   end: string;
   originalEvent: OriginalEvent;
+  isEnd?: boolean;
 }
 
 export interface OriginalEvent {

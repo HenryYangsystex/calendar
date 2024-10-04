@@ -2,7 +2,12 @@ import { CommonModule } from '@angular/common';
 import { Component, Input, SimpleChanges } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CalendarOptions } from '../models/options.model';
-import { EventDetails, Day, OriginalEvent } from '../models/day.model';
+import {
+  EventDetails,
+  Day,
+  OriginalEvent,
+  SimpleEvent,
+} from '../models/day.model';
 export interface CalendarEvent {
   title: string;
   date: Date;
@@ -79,7 +84,7 @@ export class CalendarComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(changes['options'].currentValue);
+    // console.log(changes['options'].currentValue);
 
     this.monthDays.forEach((item) => {
       item.events = [];
@@ -380,6 +385,7 @@ export class CalendarComponent {
             59,
             59,
           ).toString(), // End of the day (23:59:59)
+          isEnd: false,
           originalEvent: event,
         };
       } else if (
@@ -415,6 +421,7 @@ export class CalendarComponent {
             59,
             59,
           ).toString(), // End of the day (23:59:59)
+          isEnd: false,
           originalEvent: event,
         };
       }
@@ -424,11 +431,11 @@ export class CalendarComponent {
       // Move to the next day
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    return this.getFirstEventOfEachWeek(eventsPerDay as EventDetails[]);
+    return this.getFirstEventOfEachWeek(eventsPerDay);
   }
 
   // 區分整天行程和非整天行程
-  getFirstEventOfEachWeek(events: EventDetails[]): EventDetails[] {
+  getFirstEventOfEachWeek(events: SimpleEvent[]): EventDetails[] {
     const seenWeeks = new Set<number>();
     const firstEvents: EventDetails[] = [];
     let currentIndex: number = -1;
@@ -449,16 +456,13 @@ export class CalendarComponent {
       // If this week hasn't been encountered yet, add the event
       if (!seenWeeks.has(weekNumber)) {
         currentIndex = currentIndex + 1;
-        firstEvents.push(event);
-        let copiedObject = Object.assign({}, event);
-        copiedObject.title = '';
-        // secondEvents.push(copiedObject);
+        firstEvents.push(event as EventDetails);
         firstEvents[currentIndex].width = 150;
         firstEvents[currentIndex].isStart = true;
         seenWeeks.add(weekNumber);
       } else {
         event.title = '';
-        secondEvents.push(event);
+        secondEvents.push(event as EventDetails);
         firstEvents[currentIndex].width = firstEvents[currentIndex].width + 150;
       }
     });
@@ -466,7 +470,7 @@ export class CalendarComponent {
   }
 
   //設定行程top margin
-  setEventsTopMargin(data: EventDetails[]) {
+  setEventsTopMargin(data: EventDetails[]): EventDetails[] {
     let result = data.map((event: EventDetails) => {
       return {
         ...event,
